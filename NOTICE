@@ -1,0 +1,15 @@
+ShotSense NBA
+Code: MIT, Copyright 2026 ShotSense contributors.
+
+Bundled data and upstream documentation:
+NBA play-by-play and shotdetails dataset, Vladislav Shufinskiy.
+https://github.com/shufinskiy/nba_data
+Upstream repository distributed under Apache License, Version 2.0.
+Full license: data/licenses/UPSTREAM_LICENSE
+Pinned source and checksum: data/source.json
+Original data source identified by publisher: stats.nba.com.
+
+ShotSense redistributes the shotdetail_2023.tar.xz archive unmodified.
+Cleaning, splitting, and modeling are performed by separate ShotSense code.
+Derived aggregate reports in reports/ are based on this separately licensed data.
+No NBA marks or logos are bundled. No NBA affiliation or endorsement is implied.

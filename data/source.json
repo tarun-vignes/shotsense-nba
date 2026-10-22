@@ -1,0 +1,14 @@
+{
+  "publisher": "Vladislav Shufinskiy",
+  "repository": "https://github.com/shufinskiy/nba_data",
+  "commit": "e829d4678be1e075f99e5d41a1c5f97089be446b",
+  "url": "https://raw.githubusercontent.com/shufinskiy/nba_data/e829d4678be1e075f99e5d41a1c5f97089be446b/datasets/shotdetail_2023.tar.xz",
+  "filename": "shotdetail_2023.tar.xz",
+  "sha256": "303e71f967c199568b345cd73a75e595f1f99532cca3e6ce59afb286b63f840d",
+  "bytes": 2812692,
+  "license": "Apache-2.0",
+  "season": "2023-24",
+  "retrieved": "2026-10-22",
+  "original_source": "stats.nba.com shot detail, as documented by publisher",
+  "synthetic": false
+}
