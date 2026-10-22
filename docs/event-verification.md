@@ -15,8 +15,8 @@ The [official edition 3.0 page](https://aqxanalyticsthree.devpost.com/) explicit
 - Practical application: prioritize zones, players, teams, and periods for film review rather than recommending unsupported tactical changes.
 - Analytical insight: chronological game-safe split, training-only baseline and transforms, probability metrics, calibration and uncertainty caveats.
 - Data presentation: filter-aware zone comparisons, shot locations, sample sizes, visible units and downloadable tables.
-- Open source: MIT code and separately attributed Apache-2.0 dataset, ready to publish to the entrant's intended GitHub repository. A local repository alone is not a public open-source submission; publication remains the entrant's step.
+- Open source: MIT code and separately attributed Apache-2.0 dataset, published at https://github.com/tarun-vignes/shotsense-nba with an interactive public dashboard at https://tarun-vignes.github.io/shotsense-nba/.
 
 ## Entrant checks still required
 
-Students only. ShotSense does **not** establish that the entrant qualifies. Verify student status and all current age, residency, team, originality, AI-assistance/disclosure, project-timing, licensing, demo/video, and submission requirements on the official page. These are items to inspect, not claims about unverified rules. No messages, publication, or Devpost submission were performed.
+Students only. ShotSense does **not** establish that the entrant qualifies. Verify student status and all current age, residency, team, originality, AI-assistance/disclosure, project-timing, licensing, demo/video, and submission requirements on the official page. These are items to inspect, not claims about unverified rules. GitHub publication and a public dashboard were subsequently authorized by the entrant and completed. No organizer messages or Devpost submission were performed.
