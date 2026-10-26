@@ -12,6 +12,12 @@ The public browser dashboard is deployed from `public/` through GitHub Pages:
 
 It needs no login or installation. Filter real held-out shots by season, team, player, zone, type and period; compare actual and expected shooting, inspect the shot map, and download situation tables. All 46,251 held-out shots are included. The model is fitted in Python at build time, not retrained in the browser. The full Streamlit application below additionally provides calibration charts and shot-level CSV exports.
 
+### Player availability and empty filters
+
+The pinned archive contains **568 players**. **485** have attempts in the held-out window, March 12–April 14, 2024; the other **83** have source shots only before that window. For example, Ja Morant and Zach LaVine occur in the archive but have no evaluation-period attempts. The **Which players are covered?** disclosure lists all training-only players and source attempt counts. Players absent from the archive are unavailable. Training shots are never presented as held-out results to fill a gap.
+
+All 485 evaluation players are included without a player-level minimum. Filters intersect: a player on another team, a zone they did not shoot from, or an incompatible period/type can correctly return no shots. Browser options show counts after the other filters and disable zero-match choices; Streamlit options show stable total counts with contextual counts beneath selected fields. Empty selections have targeted recovery buttons, and Reset filters restores all evaluation shots. The minimum-attempt setting limits situation tables and zone findings, **not** player summaries. A low-sample player can have metrics even when no situation reaches that threshold.
+
 To rebuild the browser dataset after changing the analysis, run `python scripts/reproduce.py` and `python scripts/build_public.py`, then `node --test tests/public.test.mjs` (Node 22+). Commit the generated `public/shots.json` along with the source. `.github/workflows/pages.yml` validates and deploys the public dashboard on pushes to `main`.
 
 ## Run locally

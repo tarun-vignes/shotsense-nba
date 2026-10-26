@@ -29,3 +29,12 @@ The initial local handoff had no public deployment or remote CI execution. See t
 - The public dashboard needs no login or Python installation. It uses precomputed probabilities from the exact Python pipeline; filtering and summaries run in the browser. The Streamlit application additionally provides calibration charts and shot-level exports.
 - Public deployment workflow: https://github.com/tarun-vignes/shotsense-nba/actions/runs/39840439021 .
 - Python/data CI workflow: https://github.com/tarun-vignes/shotsense-nba/actions/runs/39840439207 . Both application CI and the public deployment workflow completed successfully.
+
+## Player coverage and filter review — October 26, 2026
+
+- Checked the checksum-pinned source: 218,701 input/valid attempts, zero dropped. It has 568 distinct players; 485 have held-out attempts on March 12–April 14, 2024. The other 83 have source shots only before the cutoff. None of the 485 public player options has zero shots when other filters are reset.
+- Added an archive-to-export regression test comparing every evaluation player/team attempt count. Added a browser calculation test selecting every exported player and checking each observed player/team combination. All probabilities, evaluation metrics and 46,251 held-out attempts are preserved.
+- Browser filters now show contextual counts and disable incompatible choices. Selected conflicts remain visible and offer targeted clearing controls. Streamlit uses stable total-count option labels and contextual counts below selections; its regression test checks that recovery preserves the chosen player. No silent filter clearing is used.
+- Added source/evaluation player coverage and the complete training-only list to both interfaces. The minimum situation threshold does not hide player metrics. No training predictions are substituted for missing evaluation data.
+- Rebuilt `public/shots.json`: 2,181,185 bytes, including coverage metadata. Ran 17 Python/UI tests and 3 Node tests: all passed. Existing non-failing Streamlit/Altair deprecation warnings remain.
+- Actual headless Chrome desktop/mobile verification passed: player selection, zero-match option disabling, forced conflict and recovery, low-sample metrics at a 200-attempt situation threshold, coverage disclosure, no mobile horizontal overflow and no browser runtime errors. No external API calls or synthetic dashboard data were used.

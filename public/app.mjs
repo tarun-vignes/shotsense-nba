@@ -1,4 +1,4 @@
-import {filterRows, summarize, groupRows} from './analytics.mjs';
+import {filterRows, filterCounts, summarize, groupRows} from './analytics.mjs';
 
 const $ = id => document.getElementById(id);
 const names = ['Season', 'Team', 'Player', 'Shot zone', 'Shot type', 'Period'];
@@ -75,9 +75,27 @@ function drawCourt(rows) {
 function update() {
   const filters = names.map((_, i) => $(`filter-${i}`).value);
   selected = filterRows(data.rows, filters);
+  const counts = filterCounts(data.rows, filters, data.fields.slice(0, 6).map(field => data.labels[field].length));
+  $('recovery').replaceChildren();
+  counts.forEach((values, column) => {
+    const select = $(`filter-${column}`);
+    values.forEach((count, code) => {
+      const option = select.options[code + 1];
+      option.textContent = `${data.labels[data.fields[column]][code]} (${number(count, 0)} shots)`;
+      option.disabled = count === 0 && filters[column] !== String(code);
+    });
+    const available = values.reduce((sum, count) => sum + count, 0);
+    if (!selected.length && filters[column] !== '' && available > 0) {
+      const button = element('button', `Clear ${names[column].toLowerCase()} — show ${number(available, 0)} shots`);
+      button.type = 'button';
+      button.addEventListener('click', () => { select.value = ''; update(); });
+      $('recovery').append(button);
+    }
+  });
   $('active').textContent = 'ACTIVE FILTERS · ' + (filters.map((value, i) => value === '' ? '' : `${names[i]}: ${data.labels[data.fields[i]][Number(value)]}`).filter(Boolean).join(' · ') || 'All available held-out shots');
   $('empty').hidden = selected.length > 0;
   $('results').hidden = selected.length === 0;
+  $('recovery').hidden = selected.length > 0;
   if (!selected.length) return;
   displayMetrics(summarize(selected));
   const minimum = Number($('minimum').value);
@@ -98,6 +116,10 @@ function update() {
 function populate() {
   const report = data.report;
   $('coverage').textContent = `REAL NBA DATA · 2023–24 ARCHIVE · HELD OUT ${report.test_start} TO ${report.test_end} · ${number(data.rows.length, 0)} SHOTS`;
+  if (data.coverage) {
+    $('player-coverage').textContent = `${data.coverage.evaluation_players} of ${data.coverage.source_players} source players have held-out attempts. ${data.coverage.training_only_players.length} have shots only in the training dates, so no held-out player result is available. Players absent from the source cannot be shown. Training shots are not mixed into evaluation.`;
+    $('training-only').textContent = data.coverage.training_only_players.map(row => `${row.player} (${number(row.source_attempts, 0)} source attempts; last shot ${row.last_date})`).join('; ');
+  }
   for (let i = 0; i < names.length; i++) {
     const label = element('label', names[i]), select = element('select'); select.id = `filter-${i}`;
     const all = element('option', `All ${names[i].toLowerCase()}s`); all.value = ''; select.append(all);

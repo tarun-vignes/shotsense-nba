@@ -2,6 +2,16 @@
 export function filterRows(rows, filters) {
   return rows.filter(row => filters.every((value, index) => value === '' || row[index] === Number(value)));
 }
+// For each filter, count matches with the OTHER filters applied. Never clear
+// a selection silently; selected zero-count options remain visible for recovery.
+export function filterCounts(rows, filters, sizes) {
+  return sizes.map((size, column) => {
+    const relaxed = filters.map((value, index) => index === column ? '' : value);
+    const counts = Array(size).fill(0);
+    for (const row of filterRows(rows, relaxed)) counts[row[column]]++;
+    return counts;
+  });
+}
 export function summarize(rows) {
   const n = rows.length;
   const makes = rows.reduce((s, row) => s + row[7], 0);

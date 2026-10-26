@@ -23,7 +23,10 @@ section[data-testid="stSidebar"] {background:#eaf0f6}
 def analysis(archive_stamp):
     df, audit, source = load_shots()
     test, report, coefficients = fit_analysis(df)
-    return test, report, coefficients, audit, source
+    missing = df.loc[~df.PLAYER_NAME.isin(test.PLAYER_NAME.unique())]
+    coverage = {'source_players': df.PLAYER_NAME.nunique(),
+                'training_only': missing.groupby('PLAYER_NAME').size().to_dict()}
+    return test, report, coefficients, audit, source, coverage
 
 
 def main():
@@ -34,7 +37,7 @@ def main():
         manifest = json.loads((ROOT / 'data/source.json').read_text())
         stamp = (ROOT / 'data/raw' / manifest['filename']).stat().st_mtime_ns
         with st.spinner('Validating real shot data and fitting the training-only model…'):
-            shots, report, coefficients, audit, source = analysis(stamp)
+            shots, report, coefficients, audit, source, coverage = analysis(stamp)
     except Exception as error:
         st.error(f'Shot data could not be loaded: {error}')
         st.info('Restore the bundled archive with `python scripts/download_data.py`, then restart. No synthetic data is substituted.')
@@ -42,13 +45,19 @@ def main():
 
     st.caption(f"REAL DATA · 2023–24 regular season archive · Held-out dates {report['test_start']} to {report['test_end']} · {len(shots):,} evaluation attempts")
     st.sidebar.title('Explore the evidence')
-    st.sidebar.caption('All charts use held-out shots. Empty selections mean all available values.')
+    st.sidebar.caption('All charts use held-out shots. Empty selections mean all available values. Filters intersect. Option counts are total held-out shots; counts beneath selections apply the other active filters.')
     fields = [('season', 'Season'), ('TEAM_NAME', 'Team'), ('PLAYER_NAME', 'Player'),
               ('SHOT_ZONE_BASIC', 'Shot zone'), ('SHOT_TYPE', 'Shot type'), ('period_label', 'Period')]
     selections = {}
-    # Fixed options allow intentional empty intersections without silently changing filters.
+    current = {field: st.session_state.get(field, []) for field, _ in fields}
+    # Keep selections visible, even when incompatible; never silently reset them.
     for field, label in fields:
-        selections[field] = st.sidebar.multiselect(label, sorted(shots[field].unique()), key=field)
+        counts = filter_shots(shots, {name: values for name, values in current.items() if name != field})[field].value_counts()
+        totals = shots[field].value_counts()
+        selections[field] = st.sidebar.multiselect(label, sorted(shots[field].unique()), key=field,
+            format_func=lambda value, totals=totals: f'{value} ({totals.get(value, 0):,} shots)')
+        if selections[field]:
+            st.sidebar.caption('With other filters: ' + '; '.join(f'{value}: {counts.get(value, 0):,} shots' for value in selections[field]))
     minimum = st.sidebar.slider('Minimum attempts per situation', 10, 200, 30, 10)
     def reset_filters():
         for field, _ in fields:
@@ -57,8 +66,19 @@ def main():
     selected = filter_shots(shots, selections)
     active = ' · '.join(f"{label}: {', '.join(selections[field])}" for field, label in fields if selections[field]) or 'All available held-out shots'
     st.caption('ACTIVE FILTERS — ' + active)
+    with st.expander('Which players are covered?'):
+        st.write(f"{shots.PLAYER_NAME.nunique()} of {coverage['source_players']} source players have held-out attempts. {len(coverage['training_only'])} appear only in the training dates. Players absent from the archive cannot be shown. Training shots are not mixed into evaluation.")
+        st.write('Training-only players (source attempts): ' + '; '.join(f'{name} ({count:,})' for name, count in coverage['training_only'].items()))
+        st.caption('The minimum-attempt threshold affects situation tables, not player availability or summary metrics.')
     if selected.empty:
         st.warning('No shots match these filters. Clear a player, team, or situation filter to broaden your view.')
+        def clear_filter(field):
+            st.session_state[field] = []
+        for field, label in fields:
+            if selections[field]:
+                count = len(filter_shots(shots, {name: values for name, values in selections.items() if name != field}))
+                if count:
+                    st.button(f'Clear {label.lower()} — show {count:,} shots', key=f'clear-{field}', on_click=clear_filter, args=(field,))
         return
     total = summarize(selected)
     st.info(investigation(selected, minimum))

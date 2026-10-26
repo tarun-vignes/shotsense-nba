@@ -18,9 +18,12 @@
     <section class="filters" aria-label="Shot filters">
       <div class="filter-heading"><h2>Explore the evidence</h2><button id="reset" type="button">Reset filters ↺</button></div>
       <div id="filters" class="filter-grid"></div>
+      <p class="muted">Filters intersect. Option counts use the other active filters; zero-match choices are unavailable. Reset filters to search every available player. The minimum-attempt threshold affects situation tables, not player availability or summary metrics.</p>
       <p id="active" class="muted"></p>
+      <details><summary>Which players are covered?</summary><p id="player-coverage"></p><p id="training-only" class="muted"></p></details>
     </section>
     <p id="empty" hidden role="status">No shots match these filters. Clear a player, team, or situation filter to broaden your view.</p>
+    <div id="recovery" hidden aria-label="Recover empty filters"></div>
     <div id="results">
       <section id="metrics" class="metrics" aria-label="Selected shooting summary"></section>
       <aside class="finding"><span class="eyebrow">A LEAD FOR FILM REVIEW</span><p id="finding"></p></aside>

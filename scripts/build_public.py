@@ -29,6 +29,14 @@ def main():
                'coefficients': coefficients.to_dict('records'), 'labels': labels,
                'fields': categories + ['distance_ft', 'made', 'expected', 'x_ft', 'y_ft', 'game'],
                'rows': rows}
+    missing = shots.loc[~shots.PLAYER_NAME.isin(test.PLAYER_NAME.unique())]
+    payload['coverage'] = {
+        'source_players': int(shots.PLAYER_NAME.nunique()),
+        'evaluation_players': int(test.PLAYER_NAME.nunique()),
+        'training_only_players': [
+            {'player': player, 'source_attempts': len(group),
+             'last_date': str(group.date.max().date())}
+            for player, group in missing.groupby('PLAYER_NAME', sort=True)]}
     (output / 'shots.json').write_text(json.dumps(payload, separators=(',', ':'), allow_nan=False), encoding='utf-8')
     shutil.copy(ROOT / 'data/licenses/UPSTREAM_LICENSE', output / 'DATA-LICENSE.txt')
     shutil.copy(ROOT / 'NOTICE', output / 'NOTICE.txt')

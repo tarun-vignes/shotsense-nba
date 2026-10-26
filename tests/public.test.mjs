@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {filterRows, summarize, groupRows} from '../public/analytics.mjs';
+import {filterRows, filterCounts, summarize, groupRows} from '../public/analytics.mjs';
 
 test('browser arithmetic and intersecting filters', () => {
   const rows = [[0,0,0,0,0,0,5,1,.6,0,0,1], [0,1,1,0,0,0,10,0,.4,0,0,2]];
@@ -32,4 +32,29 @@ test('public export conserves real held-out analysis and zone results', () => {
   const curry = data.labels.PLAYER_NAME.indexOf('Stephen Curry');
   assert.equal(filterRows(data.rows, ['', String(celtics), String(curry), '', '', '']).length, 0);
   assert.equal(filterRows(data.rows, ['', '', '', '', '', '']).length, data.rows.length);
+});
+
+test('every exported player is selectable and contextual counts identify conflicts', () => {
+  const data = JSON.parse(readFileSync(new URL('../public/shots.json', import.meta.url)));
+  const blank = ['', '', '', '', '', ''];
+  const sizes = data.fields.slice(0, 6).map(field => data.labels[field].length);
+  for (let player = 0; player < data.labels.PLAYER_NAME.length; player++) {
+    const rows = filterRows(data.rows, ['', '', String(player), '', '', '']);
+    assert.ok(rows.length > 0, data.labels.PLAYER_NAME[player]);
+    assert.ok(Number.isFinite(summarize(rows).expectedPct));
+    for (const team of new Set(rows.map(row => row[1]))) {
+      assert.equal(filterRows(data.rows, ['', String(team), String(player), '', '', '']).length,
+        rows.filter(row => row[1] === team).length);
+    }
+  }
+  const curry = data.labels.PLAYER_NAME.indexOf('Stephen Curry');
+  const boston = data.labels.TEAM_NAME.indexOf('Boston Celtics');
+  const counts = filterCounts(data.rows, ['', String(boston), String(curry), '', '', ''], sizes);
+  assert.equal(counts[2][curry], 0);
+  assert.ok(counts[1].reduce((sum, n) => sum + n, 0) > 0); // clearing team recovers Curry
+  assert.ok(counts[2].reduce((sum, n) => sum + n, 0) > 0); // clearing player recovers Boston
+  const all = filterCounts(data.rows, blank, sizes);
+  for (const values of all) assert.equal(values.reduce((sum, n) => sum + n, 0), data.rows.length);
+  assert.equal(data.coverage.evaluation_players, data.labels.PLAYER_NAME.length);
+  assert.equal(data.coverage.training_only_players.length + data.coverage.evaluation_players, data.coverage.source_players);
 });

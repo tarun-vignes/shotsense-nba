@@ -14,8 +14,7 @@ class AppTests(unittest.TestCase):
         app = AppTest.from_file(self.app, default_timeout=180).run()
         self.assertEqual(len(app.exception), 0)
         all_attempts = app.metric[0].value
-        teams = app.multiselect(key='TEAM_NAME').options
-        app.multiselect(key='TEAM_NAME').select(teams[0]).run()
+        app.multiselect(key='TEAM_NAME').select('Atlanta Hawks').run()
         self.assertEqual(len(app.exception), 0)
         self.assertNotEqual(app.metric[0].value, all_attempts)
         app.multiselect(key='TEAM_NAME').set_value([]).run()
@@ -23,7 +22,10 @@ class AppTests(unittest.TestCase):
         app.multiselect(key='TEAM_NAME').select('Boston Celtics').run()
         self.assertEqual(len(app.exception), 0)
         self.assertTrue(any('No shots match' in item.value for item in app.warning))
-        app.button[0].click().run()
+        app.button(key='clear-TEAM_NAME').click().run()
+        self.assertGreater(int(app.metric[0].value.replace(',', '')), 0)
+        self.assertEqual(app.multiselect(key='PLAYER_NAME').value, ['Stephen Curry'])
+        next(button for button in app.button if button.label == 'Reset filters').click().run()
         self.assertEqual(len(app.exception), 0)
         self.assertEqual(app.metric[0].value, all_attempts)
         self.assertEqual(len(app.get('arrow_vega_lite_chart')), 3)
